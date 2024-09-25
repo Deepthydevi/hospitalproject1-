@@ -1,0 +1,22 @@
+{% extends 'patient_dashboard.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Your Profile</h2>
+
+        <!-- Patient Details Card -->
+        <div class="card">
+            <div class="card-header">
+                Your Information
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ patient.name }}</p>
+                <p><strong>Email:</strong> {{ patient.email }}</p>
+                <p><strong>Mobile:</strong> {{ patient.mobile }}</p>
+                <p><strong>Gender:</strong> {{ patient.gender }}</p>
+                <p><strong>Address:</strong> {{ patient.address }}</p>
+                <p><strong>Medical History:</strong> {{ patient.medical_history }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

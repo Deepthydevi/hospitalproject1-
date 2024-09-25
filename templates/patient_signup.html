@@ -1,0 +1,166 @@
+{% load widget_tweaks %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Sign Up</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+        }
+        .form-control {
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .form-text {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .text-danger {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Patient Sign Up</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username">Username:</label>
+                {{ user_form.username|add_class:"form-control" }}
+                {% if user_form.username.errors %}
+                    <div class="text-danger">
+                        {{ user_form.username.errors }}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password1">Password:</label>
+                {{ user_form.password1|add_class:"form-control" }}
+                {% if user_form.password1.errors %}
+                    <div class="text-danger">
+                        {{ user_form.password1.errors }}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">
+                    Your password must contain at least 8 characters, can't be too similar to your personal information, can't be a commonly used password, and can't be entirely numeric.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="password2">Password Confirmation:</label>
+                {{ user_form.password2|add_class:"form-control" }}
+                {% if user_form.password2.errors %}
+                    <div class="text-danger">
+                        {{ user_form.password2.errors }}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">Enter the same password as before for verification.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Name:</label>
+                {{ patient_form.name|add_class:"form-control" }}
+                {% if patient_form.name.errors %}
+                    <div class="text-danger">
+                        {{ patient_form.name.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="date_of_birth">Date of birth:</label>
+                {{ patient_form.date_of_birth|add_class:"form-control" }}
+                {% if patient_form.date_of_birth.errors %}
+                    <div class="text-danger">
+                        {{ patient_form.date_of_birth.errors }}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">Format: dd-mm-yyyy</small>
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender:</label>
+                {{ patient_form.gender|add_class:"form-control" }}
+                {% if patient_form.gender.errors %}
+                    <div class="text-danger">
+                        {{ patient_form.gender.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address:</label>
+                {{ patient_form.address|add_class:"form-control" }}
+                {% if patient_form.address.errors %}
+                    <div class="text-danger">
+                        {{ patient_form.address.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="mobile">Mobile:</label>
+                {{ patient_form.mobile|add_class:"form-control" }}
+                {% if patient_form.mobile.errors %}
+                    <div class="text-danger">
+                        {{ patient_form.mobile.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                {{ patient_form.email|add_class:"form-control" }}
+                {% if patient_form.email.errors %}
+                    <div class="text-danger">
+                        {{ patient_form.email.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="medical_history">Medical History:</label>
+                {{ patient_form.medical_history|add_class:"form-control" }}
+                {% if patient_form.medical_history.errors %}
+                    <div class="text-danger">
+                        {{ patient_form.medical_history.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+        </form>
+    </div>
+
+</body>
+</html>

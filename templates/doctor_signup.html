@@ -1,0 +1,81 @@
+{% load widget_tweaks %}
+<head>
+    <!-- Add Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center">Doctor Signup</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- User Form -->
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            {{ user_form.username|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password1">Password</label>
+                            {{ user_form.password1|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password2">Confirm Password</label>
+                            {{ user_form.password2|add_class:"form-control" }}
+                        </div>
+
+                        <!-- Doctor Form -->
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            {{ doctor_form.name|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="departments">Departments</label>
+                            {{ doctor_form.departments|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            {{ doctor_form.address|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mobile">Mobile</label>
+                            {{ doctor_form.mobile|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            {{ doctor_form.email|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="specialization">Specialization</label>
+                            {{ doctor_form.specialization|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="experience">Experience (Years)</label>
+                            {{ doctor_form.experience|add_class:"form-control" }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            {{ doctor_form.status|add_class:"form-control" }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Signup</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

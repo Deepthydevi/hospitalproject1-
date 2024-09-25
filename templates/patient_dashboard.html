@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .wrapper {
+            display: flex;
+            width: 100%;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            color: #fff;
+            text-decoration: none;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .sidebar a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .navbar-brand {
+            color: white !important;
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .container {
+            margin-left: 20px;
+            padding-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Hospital Dashboard</a>
+        <div class="ml-auto">
+            <a class="btn btn-danger" href="{% url 'index' %}">Logout</a>
+        </div>
+    </nav>
+
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <a href="{% url 'patient_dashboard' %}">Dashboard</a>
+            <a href="{% url 'patient_appointments' %}">Appointments</a>
+            <a href="{% url 'patient_profile' %}">MY Profile</a>
+            <a href="{% url 'health_resources' %}">Health Resources</a>
+            <a href="{% url 'index' %}">Logout</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container">
+            <h2>Welcome, {{ patient.name }}</h2>
+             {% block content %}
+            {% endblock %}
+        </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
