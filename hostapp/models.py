@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django import forms
 
 # Patient Model
 class Patient(models.Model):
@@ -51,21 +52,18 @@ class Appointment(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     appointment_date = models.DateField()
     symptoms = models.CharField(max_length=100)
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Completed', 'Completed')], default='Pending')
+    status = models.CharField(
+        max_length=20,
+        choices=[('Pending', 'Pending'), ('Completed', 'Completed')],
+        default='Pending'
+    )
+    payment_status = models.CharField(max_length=50, default='Pending')
+
+    # New field to store Stripe Payment Intent ID
+    payment_intent_id = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"{self.patient.name} - {self.doctor.name} on {self.appointment_date}"
-
-# Billing Model
-class Billing(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_status = models.CharField(max_length=20, choices=[('Paid', 'Paid'), ('Pending', 'Pending'), ('Cancelled', 'Cancelled')], default='Pending')
-    date_billed = models.DateField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Bill for {self.patient.name} - {self.total_amount}"
 
 
 class MedicalHistory(models.Model):
@@ -86,3 +84,15 @@ class Prescription(models.Model):
 
     def __str__(self):
         return f"Prescription for {self.patient.name} by {self.doctor.name}"
+
+# Billing Model
+class Billing(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_status = models.CharField(max_length=20, choices=[('Paid', 'Paid'), ('Pending', 'Pending'), ('Cancelled', 'Cancelled')], default='Pending')
+    date_billed = models.DateField(auto_now_add=True)
+    stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)  # To store Stripe payment intent ID
+
+    def __str__(self):
+        return f"Bill for {self.patient.name} - {self.total_amount}"

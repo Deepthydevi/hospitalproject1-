@@ -1,0 +1,74 @@
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    /* Payment Form Styles */
+.payment-form {
+    background-color: #f9f9f9; /* Light background for the form */
+    padding: 20px; /* Add padding inside the form */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    max-width: 400px; /* Maximum width for the form */
+    margin: 20px auto; /* Center the form on the page */
+}
+
+.card-element {
+    border: 1px solid #ccc; /* Light border around card element */
+    border-radius: 4px; /* Rounded corners for card element */
+    padding: 10px; /* Padding inside the card element */
+    margin-bottom: 20px; /* Space below the card element */
+}
+
+.submit-button {
+    background-color: #007bff; /* Bootstrap primary color */
+    color: #fff; /* White text color */
+    border: none; /* No border */
+    padding: 10px 15px; /* Vertical and horizontal padding */
+    border-radius: 4px; /* Rounded corners for button */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 16px; /* Font size for button */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.submit-button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
+.payment-result {
+    margin-top: 10px; /* Space above payment result message */
+    font-size: 14px; /* Font size for result message */
+}
+
+</style>
+<h1 class="text-center">Complete Your Payment</h1>
+
+<form id="payment-form" class="payment-form">
+    <div id="card-element" class="card-element"></div>
+    <button id="submit" class="submit-button">Pay</button>
+    <div id="payment-result" class="payment-result"></div>
+</form>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    var stripe = Stripe('{{ stripe_public_key }}');
+    var clientSecret = '{{ client_secret }}';
+
+    var elements = stripe.elements();
+    var cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
+    document.getElementById('payment-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: cardElement
+            }
+        }).then(function(result) {
+            if (result.error) {
+                // Show error to your customer (e.g., insufficient funds)
+                document.getElementById('payment-result').textContent = result.error.message;
+            } else {
+                // Payment succeeded, redirect to success page
+                window.location.href = '/payment-success/';
+            }
+        });
+    });
+</script>

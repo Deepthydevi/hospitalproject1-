@@ -1,7 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from hostapp.forms import DoctorForm, PatientForm, AppointmentForm, PrescriptionForm, ContactForm
@@ -11,6 +10,10 @@ from django.http import HttpResponse
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
+import stripe
+from django.conf import settings
+from django.http import JsonResponse
+from .models import Billing
 
 
 # Create your views here.
@@ -256,26 +259,6 @@ def prescribe_medicine(request, doctor_id):
 
     return render(request, 'doctor-prescribe_medicine.html', {'form': form, 'doctor': doctor})
 
-def patient_login(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('patient_dashboard')  # Redirect to patient's dashboard after login
-            else:
-                messages.error(request, "Invalid username or password.")
-        else:
-            messages.error(request, "Invalid username or password.")
-    else:
-        form = AuthenticationForm()
-
-    return render(request, 'patient_login.html', {'form': form})
-
-
 def patient_signup(request):
     if request.method == 'POST':
         user_form = UserCreationForm(request.POST)
@@ -285,15 +268,16 @@ def patient_signup(request):
             user = user_form.save()
             patient = patient_form.save(commit=False)
             patient.user = user  # Link the patient to the user
-            patient.email = patient_form.cleaned_data['email']  # Patient's email from the PatientForm
-            patient.save()
-            login(request, user)  # Automatically log the patient in after signup
-            return redirect('patient_login')  # Redirect to patient dashboard after signup
-        else:
-            # Print the errors to the console for debugging
-            print("User Form Errors:", user_form.errors)
-            print("Patient Form Errors:", patient_form.errors)
 
+            # Optionally, set any default values if necessary
+            # patient.email = patient_form.cleaned_data.get('email', user.email)  # Adjust based on your model
+            patient.save()  # This saves the patient with all fields populated
+
+            login(request, user)  # Log the user in after successful signup
+            return redirect('patient_dashboard')  # Redirect to patient dashboard
+        else:
+            print("User Form Errors:", user_form.errors.as_json())
+            print("Patient Form Errors:", patient_form.errors.as_json())
             messages.error(request, "Error in form submission. Please check your inputs.")
     else:
         user_form = UserCreationForm()
@@ -304,6 +288,25 @@ def patient_signup(request):
         'patient_form': patient_form
     })
 
+
+def patient_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None and user.is_active:
+                login(request, user)
+                return redirect('patient_dashboard')  # Redirect to patient's dashboard after login
+            else:
+                messages.error(request, "Invalid username or password.")
+        else:
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'patient_login.html', {'form': form})
 
 @login_required
 def patient_dashboard(request):
@@ -334,7 +337,7 @@ def patient_profile(request):
         'patient': patient
     })
 
-from django.shortcuts import render
+
 
 def health_resources(request):
     tips = [
@@ -382,41 +385,95 @@ def health_resources(request):
 
     return render(request, 'health_resources.html', {'tips': tips})
 
-@login_required
-def patient_appointments(request):
-    # Get the logged-in user's corresponding Patient object
-    try:
-        patient = request.user.patient_profile  # Use the related name defined in the Patient model
-    except Patient.DoesNotExist:
-        return HttpResponse("Patient profile does not exist.", status=404)
-
-    if request.method == 'POST':
-        form = AppointmentForm(request.POST)
-        if form.is_valid():
-            appointment = form.save(commit=False)
-            appointment.patient = patient  # Set the patient to the logged-in user
-            appointment.save()
-            return redirect('patient_appointments')  # Redirect to the same view to see the updated appointments
-    else:
-        form = AppointmentForm()
-
-    # Get all appointments for this patient
-    appointments = Appointment.objects.filter(patient=patient)
-
-    return render(request, 'patient_appointments.html', {
-        'appointments': appointments,
-        'form': form,
-    })
-
-
 # Function to create a User and a corresponding Patient object
 def create_patient_user(username, password, patient_data):
     user = User.objects.create_user(username=username, password=password)
     patient = Patient.objects.create(user=user, **patient_data)  # patient_data is a dict with additional patient fields
     return user, patient  # Returning both objects if needed
 
-@receiver(post_save, sender=User)
-def create_patient_profile(sender, instance, created, **kwargs):
-    if created:
-        Patient.objects.create(user=instance)
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+def book_appointment(request):
+    doctors = Doctor.objects.filter(status=True)  # Only show active doctors
+
+    if request.method == 'POST':
+        patient = request.user.patient_profile  # Assuming OneToOne relation between User and Patient
+        doctor_id = request.POST.get('doctor')
+        appointment_date = request.POST.get('appointment_date')
+        symptoms = request.POST.get('symptoms')
+
+        # Debugging output
+        print(f"Patient: {patient.name}, Doctor ID: {doctor_id}, Appointment Date: {appointment_date}, Symptoms: {symptoms}")
+
+        # Create Stripe Payment Intent
+        try:
+            payment_intent = stripe.PaymentIntent.create(
+                amount=5000,  # Ensure this is in cents (e.g., 5000 = 50.00 INR)
+                currency='INR',
+                payment_method_types=['card'],
+            )
+            print("Payment Intent Created:", payment_intent)
+        except Exception as e:
+            messages.error(request, "There was an issue with the payment. Please try again.")
+            print("Stripe Error:", str(e))  # Log the error for debugging
+            return render(request, 'book_appointment.html', {'doctors': doctors})
+
+        # Create Appointment and store the Payment Intent ID
+        try:
+            appointment = Appointment.objects.create(
+                patient=patient,
+                doctor_id=doctor_id,
+                appointment_date=appointment_date,
+                symptoms=symptoms,
+                status='Pending',
+                payment_status='Pending',
+                payment_intent_id=payment_intent['id']  # Store the Payment Intent ID
+            )
+            print("Appointment Created:", appointment)
+        except Exception as e:
+            messages.error(request, "There was an issue creating the appointment. Please try again.")
+            print("Appointment Creation Error:", str(e))  # Log the error for debugging
+            return render(request, 'book_appointment.html', {'doctors': doctors})
+
+        # Redirect to the payment page after appointment creation
+        return redirect('payment', appointment.id)
+
+    return render(request, 'book_appointment.html', {'doctors': doctors})
+
+def payment(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    stripe_public_key = settings.STRIPE_PUBLISHABLE_KEY  # Correct the variable name here
+
+    # Retrieve the Payment Intent to get the client_secret
+    payment_intent = stripe.PaymentIntent.retrieve(appointment.payment_intent_id)
+
+    context = {
+        'appointment': appointment,
+        'stripe_public_key': stripe_public_key,
+        'client_secret': payment_intent['client_secret'],  # Get the correct client_secret
+    }
+    return render(request, 'payment.html', context)
+
+def patient_billing(request):
+    # Fetch billing details for the logged-in patient
+    patient = request.user.patient_profile  # Assuming a OneToOne relation between User and Patient
+    billing_records = Billing.objects.filter(patient=patient)
+
+    context = {
+        'billing_records': billing_records
+    }
+    return render(request, 'patient_billing.html', context)
+
+def payment_success(request):
+    return render(request, 'payment_success.html')
+
+def appointments_view(request):
+    # Assuming you have a OneToOne relationship between User and Patient
+    patient = request.user.patient_profile
+    appointments = Appointment.objects.filter(patient=patient)
+
+    context = {
+        'appointments': appointments,
+    }
+    return render(request, 'appointmentlist.html', context)

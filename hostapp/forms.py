@@ -3,15 +3,13 @@ from django.contrib.auth.views import LoginView
 
 from .models import Patient, Doctor, Appointment, Department, Prescription
 
-
 class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
-        fields = '__all__'
+        fields = '__all__'  # Ensure this includes all necessary fields
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }
-
 class DoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor

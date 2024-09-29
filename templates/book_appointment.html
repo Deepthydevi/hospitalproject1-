@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book an Appointment</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Book an Appointment</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Select Doctor -->
+        <div class="form-group">
+            <label for="doctor">Select Doctor:</label>
+            <select class="form-control" id="doctor" name="doctor" required>
+                <option value="">-- Select Doctor --</option>
+                {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}">{{ doctor.name }} ({{ doctor.specialization }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Select Appointment Date -->
+        <div class="form-group">
+            <label for="appointment_date">Appointment Date:</label>
+            <input type="date" class="form-control" id="appointment_date" name="appointment_date" required>
+        </div>
+
+        <!-- Symptoms -->
+        <div class="form-group">
+            <label for="symptoms">Symptoms:</label>
+            <textarea class="form-control" id="symptoms" name="symptoms" rows="4" required></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

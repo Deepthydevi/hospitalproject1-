@@ -34,7 +34,12 @@ urlpatterns = [
     path('patient_dashboard/', views.patient_dashboard, name='patient_dashboard'),
     path('patientprofile/', views.patient_profile, name='patient_profile'),
     path('health_resources/', views.health_resources, name='health_resources'),
-    path('appointments/', views.patient_appointments, name='patient_appointments'),
+    path('book-appointment/', views.book_appointment, name='book_appointment'),
+    path('payment/<int:appointment_id>/', views.payment, name='payment'),
+    path('billing/', views.patient_billing, name='patient_billing'),
+    path('payment-success/', views.payment_success, name='payment_success'),
+    path('appointments/', views.appointments_view, name='appointments'),
+
 
 
 ]
